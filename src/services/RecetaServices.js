@@ -31,7 +31,7 @@ export const createReceta = async (receta) => {
 // Actualizar una receta existente
 export const updateReceta = async (id, receta) => {
   const response = await fetch(`${API_URL}/${id}`, {
-    method: 'PUT',
+    method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(receta),
   });

@@ -1,6 +1,13 @@
-
 import { useState, useEffect } from 'react';
-import { getRecetas, createReceta, updateReceta, deleteReceta } from '../services/RecetaServices.js';
+import { 
+  getRecetas, 
+  createReceta, 
+  updateReceta, 
+  deleteReceta, 
+  inactivateReceta, 
+  getRecetaById, 
+  searchRecetasByNombre 
+} from '../services/RecetaServices.js';
 
 const RecetaForm = () => {
   const [recetas, setRecetas] = useState([]);
@@ -11,6 +18,7 @@ const RecetaForm = () => {
     estado: 'Activa',
     categoria: '',
   });
+  const [searchQuery, setSearchQuery] = useState('');
   const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
@@ -19,6 +27,11 @@ const RecetaForm = () => {
 
   const loadRecetas = async () => {
     const data = await getRecetas();
+    setRecetas(data);
+  };
+
+  const handleSearch = async () => {
+    const data = await searchRecetasByNombre(searchQuery);
     setRecetas(data);
   };
 
@@ -47,9 +60,15 @@ const RecetaForm = () => {
     loadRecetas();
   };
 
-  const handleEdit = (receta) => {
+  const handleEdit = async (id) => {
+    const receta = await getRecetaById(id);
     setFormData(receta);
-    setEditingId(receta._id);
+    setEditingId(id);
+  };
+
+  const handleInactivate = async (id) => {
+    await inactivateReceta(id);
+    loadRecetas();
   };
 
   const handleDelete = async (id) => {
@@ -60,6 +79,17 @@ const RecetaForm = () => {
   return (
     <div className="container">
       <h1>Gestión de Recetas</h1>
+
+      {/* Formulario de búsqueda */}
+      <div>
+        <label>Buscar por nombre:</label>
+        <input 
+          type="text" 
+          value={searchQuery} 
+          onChange={(e) => setSearchQuery(e.target.value)} 
+        />
+        <button onClick={handleSearch}>Buscar</button>
+      </div>
 
       {/* Formulario */}
       <form onSubmit={handleSubmit}>
@@ -121,7 +151,8 @@ const RecetaForm = () => {
           <li key={receta._id}>
             <strong>{receta.nombre}</strong> - {receta.categoria} - {receta.estado}
             <br />
-            <button onClick={() => handleEdit(receta)}>Editar</button>
+            <button onClick={() => handleEdit(receta._id)}>Editar</button>
+            <button onClick={() => handleInactivate(receta._id)}>Inactivar</button>
             <button onClick={() => handleDelete(receta._id)}>Eliminar</button>
           </li>
         ))}
